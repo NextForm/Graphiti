@@ -44,6 +44,7 @@ public extension Schema {
     ) -> EventLoopFuture<GraphQLResult> {
         do {
             return try graphql(
+                subscriptionStrategy: AddSubscriptionFieldExecutionStrategy(),
                 schema: schema,
                 request: request,
                 rootValue: resolver,

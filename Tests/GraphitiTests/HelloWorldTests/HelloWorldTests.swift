@@ -41,6 +41,10 @@ struct UserInput : Codable {
     let name: String?
 }
 
+struct UserChangedInput: Codable {
+    let id: String
+}
+
 final class HelloContext {
     func hello() -> String {
         "world"
@@ -87,6 +91,14 @@ struct HelloResolver {
     func addUser(context: HelloContext, arguments: AddUserArguments) -> User {
         User(arguments.user)
     }
+    
+    struct UserChangedArguments : Codable {
+        let input: UserChangedInput
+    }
+    
+    func subscribeToUserChanged(context: HelloContext, arguments: UserChangedArguments) -> User {
+        return User(id: "", name: "")
+    }
 }
 
 struct HelloAPI : API {
@@ -110,6 +122,10 @@ struct HelloAPI : API {
             InputField("name", at: \.name)
         }
         
+        Input(UserChangedInput.self) {
+            InputField("id", at: \.id)
+        }
+        
         Query {
             Field("hello", at: HelloResolver.hello)
             Field("asyncHello", at: HelloResolver.asyncHello)
@@ -128,6 +144,12 @@ struct HelloAPI : API {
         Mutation {
             Field("addUser", at: HelloResolver.addUser) {
                 Argument("user", at: \.user)
+            }
+        }
+        
+        Subscription {
+            Field("UserChanged", at: HelloResolver.subscribeToUserChanged) {
+                Argument("input", at: \.input)
             }
         }
     }
@@ -308,6 +330,36 @@ class HelloWorldTests : XCTestCase {
         
         api.execute(
             request: mutation,
+            context: api.context,
+            on: group,
+            variables: variables
+        ).whenSuccess { result in
+            XCTAssertEqual(result, expected)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10)
+    }
+    
+    func testSubscription() throws {
+        let subscription = """
+        subscription UserChanged($input: UserChangedInput!) {
+            UserChanged(input: $input) {
+                id
+            }
+        }
+        """
+        
+        let variables: [String: Map] = ["input" : [ "id" : "123"]]
+        
+        let expected = GraphQLResult(
+            data: ["UserChanged" : [ "id" : ""]]
+        )
+        
+        let expectation = XCTestExpectation()
+        
+        api.execute(
+            request: subscription,
             context: api.context,
             on: group,
             variables: variables
