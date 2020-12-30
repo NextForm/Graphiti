@@ -9,6 +9,7 @@ import Foundation
 import GraphQL
 import NIO
 
+// All this does is return success for all fields assuming the query validation succeeded
 struct AddSubscriptionFieldExecutionStrategy: SubscriptionFieldExecutionStrategy {
     
     public init () {}

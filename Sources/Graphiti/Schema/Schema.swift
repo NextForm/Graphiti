@@ -40,11 +40,12 @@ public extension Schema {
         context: Context,
         eventLoopGroup: EventLoopGroup,
         variables: [String: Map] = [:],
-        operationName: String? = nil
+        operationName: String? = nil,
+        addingSubscription: Bool = false
     ) -> EventLoopFuture<GraphQLResult> {
         do {
             return try graphql(
-                subscriptionStrategy: AddSubscriptionFieldExecutionStrategy(),
+                subscriptionStrategy: addingSubscription ? AddSubscriptionFieldExecutionStrategy() : SerialFieldExecutionStrategy(),
                 schema: schema,
                 request: request,
                 rootValue: resolver,

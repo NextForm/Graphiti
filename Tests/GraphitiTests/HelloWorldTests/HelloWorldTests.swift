@@ -370,6 +370,37 @@ class HelloWorldTests : XCTestCase {
         
         wait(for: [expectation], timeout: 10)
     }
+    
+    func testAddSubscription() throws {
+        let subscription = """
+        subscription UserChanged($input: UserChangedInput!) {
+            UserChanged(input: $input) {
+                id
+            }
+        }
+        """
+        
+        let variables: [String: Map] = ["input" : [ "id" : "123"]]
+        
+        let expected = GraphQLResult(
+            data: ["UserChanged" : true]
+        )
+        
+        let expectation = XCTestExpectation()
+        
+        api.execute(
+            request: subscription,
+            context: api.context,
+            on: group,
+            variables: variables,
+            addingSubscription: true
+        ).whenSuccess { result in
+            XCTAssertEqual(result, expected)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10)
+    }
 }
 
 extension HelloWorldTests {
