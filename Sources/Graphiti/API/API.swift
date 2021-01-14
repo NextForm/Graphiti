@@ -14,7 +14,8 @@ extension API {
         context: ContextType,
         on eventLoopGroup: EventLoopGroup,
         variables: [String: Map] = [:],
-        operationName: String? = nil
+        operationName: String? = nil,
+        addingSubscription: Bool = false
     ) -> EventLoopFuture<GraphQLResult> {
         return schema.execute(
             request: request,
@@ -22,7 +23,8 @@ extension API {
             context: context,
             eventLoopGroup: eventLoopGroup,
             variables: variables,
-            operationName: operationName
+            operationName: operationName,
+            addingSubscription: addingSubscription
         )
     }
 }
